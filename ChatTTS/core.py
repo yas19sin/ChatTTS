@@ -181,20 +181,19 @@ class Chat:
         return torch.randn(dim, device=std.device) * std + mean
     
     def init_normalizer(self, lang):
-        
         if lang not in self.normalizer:
             if lang == 'zh':
                 try:
                     from tn.chinese.normalizer import Normalizer
-                except:
-                    self.logger.log(logging.WARNING, f'Package WeTextProcessing not found! \
-                        Run: conda install -c conda-forge pynini=2.1.5 && pip install WeTextProcessing')
+                except ImportError:
+                    self.logger.log(logging.WARNING, 'Package WeTextProcessing not found! Run: conda install -c conda-forge pynini=2.1.5 && pip install WeTextProcessing')
+                    return
                 self.normalizer[lang] = Normalizer().normalize
-            else:
-                try:
-                    from nemo_text_processing.text_normalization.normalize import Normalizer
-                except:
-                    self.logger.log(logging.WARNING, f'Package nemo_text_processing not found! \
-                        Run: conda install -c conda-forge pynini=2.1.5 && pip install nemo_text_processing')
-                self.normalizer[lang] = partial(Normalizer(input_case='cased', lang=lang).normalize, verbose=False, punct_post_process=True)
+        else:
+            try:
+                from nemo_text_processing.text_normalization.normalize import Normalizer
+            except ImportError:
+                self.logger.log(logging.WARNING, 'Package nemo_text_processing not found! Run: conda install -c conda-forge pynini=2.1.5 && pip install nemo_text_processing')
+                return
+            self.normalizer[lang] = partial(Normalizer(input_case='cased', lang=lang).normalize, verbose=False, punct_post_process=True)
 
